@@ -918,6 +918,7 @@ static int update_channel_lifetime(ts_ur_super_session *ss, ch_info* chn)
 	continue
 
 static u08bits get_transport_value(const u08bits *value) {
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "get_transport_value value[0] == %lu\n", value[0]);
 	if((value[0] == STUN_ATTRIBUTE_TRANSPORT_UDP_VALUE)||
 	   (value[0] == STUN_ATTRIBUTE_TRANSPORT_TCP_VALUE)) {
 		return value[0];
@@ -1032,6 +1033,7 @@ static int handle_turn_allocate(turn_turnserver *server,
 				}
 			}
 
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "handle_turn_allocate attr_type == %d\n", attr_type);
 			switch (attr_type) {
 			SKIP_ATTRIBUTES;
 			case STUN_ATTRIBUTE_NEW_BANDWIDTH:
