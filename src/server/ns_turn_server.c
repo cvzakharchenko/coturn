@@ -305,7 +305,7 @@ static int good_peer_addr(turn_turnserver *server, const char* realm, ioa_addr *
 					if (ioa_addr_in_range(&(server->ip_blacklist->rs[i].enc), peer_addr)) {
 						char saddr[129];
 						addr_to_string_no_port(peer_addr,(u08bits*)saddr);
-						TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "A peer IP %s denied in the range: %s\n",saddr,server->ip_blacklist->rs[i].str);
+						TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "A peer IP %s is denied in the range: %s\n",saddr,server->ip_blacklist->rs[i].str);
 						return 0;
 					}
 				}
