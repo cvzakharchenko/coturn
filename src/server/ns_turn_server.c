@@ -1636,6 +1636,7 @@ static int handle_turn_refresh(turn_turnserver *server,
 							copy_auth_parameters(orig_ss,ss);
 						}
 
+						TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Line %d\n", __LINE__);
 						if(check_stun_auth(server, ss, tid, resp_constructed, err_code, reason, in_buffer, nbh,
 								STUN_METHOD_REFRESH, &message_integrity, &postpone_reply, can_resume)<0) {
 							if(!(*err_code)) {
@@ -3223,6 +3224,7 @@ static void resume_processing_after_username_check(int success,  int oauth, int 
 				}
 			}
 
+			TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Line %d\n", __LINE__);
 			read_client_connection(server,ss,in_buffer,0,0);
 
 			close_ioa_socket_after_processing_if_necessary(ss->client_socket);
@@ -3241,6 +3243,10 @@ static int check_stun_auth(turn_turnserver *server,
 			int *postpone_reply,
 			int can_resume)
 {
+	ss->nonce[16] = 0;
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "SS->NONCE: %s\n", ss->nonce);
+
+
 	u08bits usname[STUN_MAX_USERNAME_SIZE+1];
 	u08bits nonce[STUN_MAX_NONCE_SIZE+1];
 	u08bits realm[STUN_MAX_REALM_SIZE+1];
@@ -3405,10 +3411,15 @@ static int check_stun_auth(turn_turnserver *server,
 
 		/* Stale Nonce check: */
 
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "NONCE: %s\n", nonce);
+
 		if(new_nonce) {
 			*err_code = 438;
-			*reason = (const u08bits*)"Wrong nonce";
-			return create_challenge_response(ss,tid,resp_constructed,err_code,reason,nbh,method);
+			*reason = (const u08bits*)"New nonce";
+			int response = create_challenge_response(ss,tid,resp_constructed,err_code,reason,nbh,method);
+			// ss->nonce[16] = 0;
+			// TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "NONCE: %s\n", ss->nonce);
+			return response;
 		}
 
 		if(strcmp((s08bits*)ss->nonce,(s08bits*)nonce)) {
@@ -3670,6 +3681,7 @@ static int handle_turn_command(turn_turnserver *server, ts_ur_super_session *ss,
 					;
 				} else if(!(*(server->mobility)) || (method != STUN_METHOD_REFRESH) || is_allocation_valid(get_allocation_ss(ss))) {
 					int postpone_reply = 0;
+					TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Line %d\n", __LINE__);
 					check_stun_auth(server, ss, &tid, resp_constructed, &err_code, &reason, in_buffer, nbh, method, &message_integrity, &postpone_reply, can_resume);
 					if(postpone_reply)
 						no_response = 1;
@@ -4494,6 +4506,7 @@ static int read_client_connection(turn_turnserver *server,
 		u16bits method = stun_get_method_str(ioa_network_buffer_data(in_buffer->nbh),
 						ioa_network_buffer_get_size(in_buffer->nbh));
 
+		TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Line %d\n", __LINE__);
 		handle_turn_command(server, ss, in_buffer, nbh, &resp_constructed, can_resume);
 
 		if((method != STUN_METHOD_BINDING) && (method != STUN_METHOD_SEND))
@@ -4778,6 +4791,9 @@ static void client_input_handler(ioa_socket_handle s, int event_type,
 
 	ts_ur_super_session* ss = (ts_ur_super_session*)arg;
 
+	ss->nonce[16] = 0;
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "%s SS->NONCE: %s\n", __FUNCTION__, ss->nonce);
+
 	turn_turnserver *server = (turn_turnserver*)ss->server;
 
 	if (!server) {
@@ -4788,6 +4804,7 @@ static void client_input_handler(ioa_socket_handle s, int event_type,
 		return;
 	}
 
+	TURN_LOG_FUNC(TURN_LOG_LEVEL_ERROR, "Line %d\n", __LINE__);
 	read_client_connection(server, ss, data, can_resume, 1);
 
 	if (ss->to_be_closed) {
